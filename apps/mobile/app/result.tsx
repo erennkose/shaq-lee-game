@@ -224,12 +224,6 @@ export default function ResultScreen() {
       >
         {/* Başlık */}
         <View style={styles.headerRow}>
-          <TouchableOpacity
-            onPress={() => router.back()}
-            style={styles.backBtn}
-          >
-            <Text style={styles.backBtnText}>{t("back")}</Text>
-          </TouchableOpacity>
           <Text style={styles.screenTitle}>
             {data.alreadyPlayed ? t("todaysResult") : t("rosterReady")}
           </Text>
@@ -449,14 +443,6 @@ const createStyles = (colors: ThemeColors) =>
     alignItems: "center",
     marginBottom: Spacing.lg,
     gap: Spacing.md,
-  },
-  backBtn: {
-    padding: Spacing.sm,
-  },
-  backBtnText: {
-    fontFamily: "Inter_500Medium",
-    fontSize: 14,
-    color: colors.textSecondary,
   },
   screenTitle: {
     fontFamily: "Inter_700Bold",
