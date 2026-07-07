@@ -1,0 +1,212 @@
+[
+  {
+    "id": "coach-erik-spoelstra",
+    "full_name": "Erik Spoelstra",
+    "team": "MIA",
+    "career_win_pct": 0.5842,
+    "playoff_titles": 2
+  },
+  {
+    "id": "coach-gregg-popovich",
+    "full_name": "Gregg Popovich",
+    "team": "SAS",
+    "career_win_pct": 0.6027,
+    "playoff_titles": 5
+  },
+  {
+    "id": "coach-steve-kerr",
+    "full_name": "Steve Kerr",
+    "team": "GSW",
+    "career_win_pct": 0.6890,
+    "playoff_titles": 4
+  },
+  {
+    "id": "coach-doc-rivers",
+    "full_name": "Doc Rivers",
+    "team": "MIL",
+    "career_win_pct": 0.5820,
+    "playoff_titles": 1
+  },
+  {
+    "id": "coach-tyronn-lue",
+    "full_name": "Tyronn Lue",
+    "team": "LAC",
+    "career_win_pct": 0.6100,
+    "playoff_titles": 1
+  },
+  {
+    "id": "coach-mike-budenholzer",
+    "full_name": "Mike Budenholzer",
+    "team": "PHX",
+    "career_win_pct": 0.5610,
+    "playoff_titles": 0
+  },
+  {
+    "id": "coach-joe-mazzulla",
+    "full_name": "Joe Mazzulla",
+    "team": "BOS",
+    "career_win_pct": 0.7020,
+    "playoff_titles": 1
+  },
+  {
+    "id": "coach-darvin-ham",
+    "full_name": "JB Bickerstaff",
+    "team": "DET",
+    "career_win_pct": 0.4120,
+    "playoff_titles": 0
+  },
+  {
+    "id": "coach-mark-daigneault",
+    "full_name": "Mark Daigneault",
+    "team": "OKC",
+    "career_win_pct": 0.5660,
+    "playoff_titles": 0
+  },
+  {
+    "id": "coach-monty-williams",
+    "full_name": "Monty Williams",
+    "team": "DET",
+    "career_win_pct": 0.5100,
+    "playoff_titles": 0
+  },
+  {
+    "id": "coach-ime-udoka",
+    "full_name": "Ime Udoka",
+    "team": "HOU",
+    "career_win_pct": 0.5860,
+    "playoff_titles": 0
+  },
+  {
+    "id": "coach-rick-carlisle",
+    "full_name": "Rick Carlisle",
+    "team": "IND",
+    "career_win_pct": 0.5730,
+    "playoff_titles": 1
+  },
+  {
+    "id": "coach-tom-thibodeau",
+    "full_name": "Tom Thibodeau",
+    "team": "NYK",
+    "career_win_pct": 0.5760,
+    "playoff_titles": 0
+  },
+  {
+    "id": "coach-mike-brown",
+    "full_name": "Mike Brown",
+    "team": "SAC",
+    "career_win_pct": 0.5480,
+    "playoff_titles": 0
+  },
+  {
+    "id": "coach-will-hardy",
+    "full_name": "Will Hardy",
+    "team": "UTA",
+    "career_win_pct": 0.3780,
+    "playoff_titles": 0
+  },
+  {
+    "id": "coach-taylor-jenkins",
+    "full_name": "Taylor Jenkins",
+    "team": "MEM",
+    "career_win_pct": 0.5030,
+    "playoff_titles": 0
+  },
+  {
+    "id": "coach-nate-mcmillan",
+    "full_name": "Nate McMillan",
+    "team": "ATL",
+    "career_win_pct": 0.4980,
+    "playoff_titles": 0
+  },
+  {
+    "id": "coach-kenny-atkinson",
+    "full_name": "Kenny Atkinson",
+    "team": "CLE",
+    "career_win_pct": 0.4300,
+    "playoff_titles": 0
+  },
+  {
+    "id": "coach-charles-lee",
+    "full_name": "Charles Lee",
+    "team": "CHA",
+    "career_win_pct": 0.3500,
+    "playoff_titles": 0
+  },
+  {
+    "id": "coach-jamahl-mosley",
+    "full_name": "Jamahl Mosley",
+    "team": "ORL",
+    "career_win_pct": 0.4210,
+    "playoff_titles": 0
+  },
+  {
+    "id": "coach-jason-kidd",
+    "full_name": "Jason Kidd",
+    "team": "DAL",
+    "career_win_pct": 0.5540,
+    "playoff_titles": 0
+  },
+  {
+    "id": "coach-nick-nurse",
+    "full_name": "Nick Nurse",
+    "team": "PHI",
+    "career_win_pct": 0.5960,
+    "playoff_titles": 1
+  },
+  {
+    "id": "coach-michael-malone",
+    "full_name": "Michael Malone",
+    "team": "DEN",
+    "career_win_pct": 0.5440,
+    "playoff_titles": 1
+  },
+  {
+    "id": "coach-tony-brown",
+    "full_name": "Chris Quinn",
+    "team": "MIA",
+    "career_win_pct": 0.4500,
+    "playoff_titles": 0
+  },
+  {
+    "id": "coach-jordi-fernandez",
+    "full_name": "Jordi Fernandez",
+    "team": "BKN",
+    "career_win_pct": 0.3800,
+    "playoff_titles": 0
+  },
+  {
+    "id": "coach-stacey-simons",
+    "full_name": "Stacey Simons",
+    "team": "WAS",
+    "career_win_pct": 0.3200,
+    "playoff_titles": 0
+  },
+  {
+    "id": "coach-james-borrego",
+    "full_name": "James Borrego",
+    "team": "NOP",
+    "career_win_pct": 0.4100,
+    "playoff_titles": 0
+  },
+  {
+    "id": "coach-darko-rajakovic",
+    "full_name": "Darko Rajakovic",
+    "team": "TOR",
+    "career_win_pct": 0.3900,
+    "playoff_titles": 0
+  },
+  {
+    "id": "coach-dave-joerger",
+    "full_name": "Randy Wittman",
+    "team": "MIN",
+    "career_win_pct": 0.4600,
+    "playoff_titles": 0
+  },
+  {
+    "id": "coach-chris-finch",
+    "full_name": "Chris Finch",
+    "team": "MIN",
+    "career_win_pct": 0.5200,
+    "playoff_titles": 0
+  }
+]

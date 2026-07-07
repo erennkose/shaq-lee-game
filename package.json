@@ -1,0 +1,23 @@
+{
+  "name": "kadromu-kur",
+  "private": true,
+  "workspaces": [
+    "apps/mobile",
+    "packages/game-logic"
+  ],
+  "scripts": {
+    "test": "cd packages/game-logic && npm test",
+    "import-players": "npx ts-node --project tsconfig.scripts.json supabase/seed/import-csv-players.ts",
+    "sync-players": "npx ts-node --project tsconfig.scripts.json supabase/seed/sync-players.ts",
+    "import-coaches": "npx ts-node --project tsconfig.scripts.json supabase/seed/import-coaches.ts"
+  },
+  "devDependencies": {
+    "@types/node": "^20.19.43",
+    "dotenv": "^17.4.2",
+    "ts-node": "^10.9.2",
+    "typescript": "^5.9.3"
+  },
+  "dependencies": {
+    "@supabase/supabase-js": "^2.110.0"
+  }
+}
