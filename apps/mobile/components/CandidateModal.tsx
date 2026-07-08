@@ -16,6 +16,7 @@ import {
   ActivityIndicator,
   Pressable,
   Alert,
+  Platform,
 } from "react-native";
 import { LinearGradient } from "expo-linear-gradient";
 import {
@@ -140,27 +141,40 @@ export function CandidateModal({ slot, excludeIds, onSelect, onClose }: Props) {
 
   const handleReroll = () => {
     if (rerollUsed) {
-      Alert.alert(t("error"), t("rerollLimitReached"));
+      if (Platform.OS === "web") {
+        window.alert(`${t("error")}: ${t("rerollLimitReached")}`);
+      } else {
+        Alert.alert(t("error"), t("rerollLimitReached"));
+      }
       return;
     }
 
-    Alert.alert(
-      t("rerollConfirmTitle"),
-      t("rerollUsedAlert"),
-      [
-        { text: t("cancel"), style: "cancel" },
-        {
-          text: t("yes"),
-          onPress: async () => {
-            await useReroll();
-            candidatesCache.delete(cacheKey);
-            await AsyncStorage.removeItem(persistentCacheKey);
-            const currentIds = candidates.map((c) => c.id);
-            await fetchCandidates(true, currentIds);
+    const executeReroll = async () => {
+      await useReroll();
+      candidatesCache.delete(cacheKey);
+      await AsyncStorage.removeItem(persistentCacheKey);
+      const currentIds = candidates.map((c) => c.id);
+      await fetchCandidates(true, currentIds);
+    };
+
+    if (Platform.OS === "web") {
+      const confirmed = window.confirm(`${t("rerollConfirmTitle")}\n\n${t("rerollUsedAlert")}`);
+      if (confirmed) {
+        executeReroll();
+      }
+    } else {
+      Alert.alert(
+        t("rerollConfirmTitle"),
+        t("rerollUsedAlert"),
+        [
+          { text: t("cancel"), style: "cancel" },
+          {
+            text: t("yes"),
+            onPress: executeReroll,
           },
-        },
-      ]
-    );
+        ]
+      );
+    }
   };
 
   const handleSelect = (c: RawCandidate) => {
