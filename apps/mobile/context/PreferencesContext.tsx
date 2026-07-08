@@ -65,7 +65,13 @@ type TranslationKey =
   | "dark"
   | "wins"
   | "winsSeason"
-  | "winsUpper";
+  | "winsUpper"
+  | "reroll"
+  | "rerollRemaining"
+  | "rerollLimitReached"
+  | "rerollConfirmTitle"
+  | "rerollUsedAlert"
+  | "yes";
 
 const translations: Record<Language, Record<TranslationKey, string>> = {
   tr: {
@@ -125,6 +131,12 @@ const translations: Record<Language, Record<TranslationKey, string>> = {
     wins: "Galibiyet",
     winsSeason: "82 Maçlık Sezonda",
     winsUpper: "GALİBİYET",
+    reroll: "Yeniden Öner",
+    rerollRemaining: "1 Reroll Hakkı Mevcut",
+    rerollLimitReached: "Reroll Hakkı Tükendi",
+    rerollConfirmTitle: "Reroll Kullanılsın mı?",
+    rerollUsedAlert: "Bu pozisyon için yeni adaylar getirilecek. Günlük 1 olan reroll hakkınız kullanılacaktır. Onaylıyor musunuz?",
+    yes: "Evet",
   },
   en: {
     appearance: "Appearance",
@@ -183,6 +195,12 @@ const translations: Record<Language, Record<TranslationKey, string>> = {
     wins: "Wins",
     winsSeason: "In an 82-Game Season",
     winsUpper: "WINS",
+    reroll: "Reroll",
+    rerollRemaining: "1 Reroll Available",
+    rerollLimitReached: "Reroll Limit Reached",
+    rerollConfirmTitle: "Use Reroll?",
+    rerollUsedAlert: "This will fetch new candidate players for this position. Your daily 1-time reroll right will be used. Do you confirm?",
+    yes: "Yes",
   },
 };
 

@@ -7,9 +7,12 @@ import React, {
   useContext,
   useState,
   useCallback,
+  useEffect,
   PropsWithChildren,
 } from "react";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 import { SLOTS, SlotKey } from "../constants/theme";
+import { getLocalDateKey } from "../lib/date";
 
 export interface SelectedPlayer {
   id: string;
@@ -41,12 +44,29 @@ interface GameContextValue {
   clearRoster: () => void;
   isRosterComplete: boolean;
   allPlayerIds: string[];
+  rerollUsed: boolean;
+  useReroll: () => Promise<void>;
 }
 
 const GameContext = createContext<GameContextValue | undefined>(undefined);
 
 export function GameProvider({ children }: PropsWithChildren) {
   const [roster, setRoster] = useState<RosterState>({});
+  const [rerollUsed, setRerollUsed] = useState<boolean>(false);
+
+  // Bugün reroll kullanıldı mı kontrol et
+  useEffect(() => {
+    const checkReroll = async () => {
+      try {
+        const today = getLocalDateKey();
+        const value = await AsyncStorage.getItem(`kadromu_kur_reroll_used:${today}`);
+        setRerollUsed(value === "true");
+      } catch (err) {
+        console.error("Reroll durumu yüklenirken hata:", err);
+      }
+    };
+    checkReroll();
+  }, []);
 
   const setSlot = useCallback(
     (slot: SlotKey, entity: SelectedPlayer | SelectedCoach) => {
@@ -57,6 +77,16 @@ export function GameProvider({ children }: PropsWithChildren) {
 
   const clearRoster = useCallback(() => {
     setRoster({});
+  }, []);
+
+  const useReroll = useCallback(async () => {
+    try {
+      const today = getLocalDateKey();
+      await AsyncStorage.setItem(`kadromu_kur_reroll_used:${today}`, "true");
+      setRerollUsed(true);
+    } catch (err) {
+      console.error("Reroll kullanılırken hata:", err);
+    }
   }, []);
 
   const isRosterComplete =
@@ -74,6 +104,8 @@ export function GameProvider({ children }: PropsWithChildren) {
         clearRoster,
         isRosterComplete,
         allPlayerIds,
+        rerollUsed,
+        useReroll,
       }}
     >
       {children}

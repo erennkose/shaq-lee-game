@@ -15,6 +15,7 @@ import {
   FlatList,
   ActivityIndicator,
   Pressable,
+  Alert,
 } from "react-native";
 import { LinearGradient } from "expo-linear-gradient";
 import {
@@ -24,7 +25,7 @@ import {
   SlotKey,
   ThemeColors,
 } from "../constants/theme";
-import { SelectedPlayer, SelectedCoach } from "../context/GameContext";
+import { useGame, SelectedPlayer, SelectedCoach } from "../context/GameContext";
 import { supabase } from "../lib/supabase";
 import { usePreferences } from "../context/PreferencesContext";
 import { getLocalDateKey } from "../lib/date";
@@ -52,6 +53,7 @@ const CANDIDATES_CACHE_PREFIX = "kadromu_kur_candidates_cache_v1";
 
 export function CandidateModal({ slot, excludeIds, onSelect, onClose }: Props) {
   const { colors, language, slotLabels, t } = usePreferences();
+  const { rerollUsed, useReroll } = useGame();
   const styles = createStyles(colors);
   const [candidates, setCandidates] = useState<RawCandidate[]>([]);
   const [loading, setLoading] = useState(true);
@@ -61,12 +63,12 @@ export function CandidateModal({ slot, excludeIds, onSelect, onClose }: Props) {
   const cacheKey = slot;
   const persistentCacheKey = `${CANDIDATES_CACHE_PREFIX}:${cacheKey}`;
 
-  const fetchCandidates = useCallback(async () => {
+  const fetchCandidates = useCallback(async (bypassCache = false, currentIds: string[] = []) => {
     setLoading(true);
     setError(null);
 
     const cachedCandidates = candidatesCache.get(cacheKey);
-    if (cachedCandidates) {
+    if (cachedCandidates && !bypassCache) {
       setCandidates(cachedCandidates);
       setLoading(false);
       setError(null);
@@ -75,24 +77,31 @@ export function CandidateModal({ slot, excludeIds, onSelect, onClose }: Props) {
 
     try {
       const today = getLocalDateKey();
-      const persisted = await AsyncStorage.getItem(persistentCacheKey);
-      if (persisted) {
-        try {
-          const parsed = JSON.parse(persisted) as { date?: string; candidates?: RawCandidate[] };
-          if (parsed.date === today && Array.isArray(parsed.candidates)) {
-            setCandidates(parsed.candidates);
-            candidatesCache.set(cacheKey, parsed.candidates);
-            setLoading(false);
-            return;
+      if (!bypassCache) {
+        const persisted = await AsyncStorage.getItem(persistentCacheKey);
+        if (persisted) {
+          try {
+            const parsed = JSON.parse(persisted) as { date?: string; candidates?: RawCandidate[] };
+            if (parsed.date === today && Array.isArray(parsed.candidates)) {
+              setCandidates(parsed.candidates);
+              candidatesCache.set(cacheKey, parsed.candidates);
+              setLoading(false);
+              return;
+            }
+          } catch {
+            await AsyncStorage.removeItem(persistentCacheKey);
           }
-        } catch {
-          await AsyncStorage.removeItem(persistentCacheKey);
         }
       }
 
       const session = await supabase.auth.getSession();
       const token = session.data.session?.access_token;
       const anonKey = process.env.EXPO_PUBLIC_SUPABASE_ANON_KEY ?? "";
+
+      let activeExcludeIds = [...excludeIds];
+      if (bypassCache && currentIds.length > 0) {
+        activeExcludeIds = [...activeExcludeIds, ...currentIds];
+      }
 
       const res = await fetch(
         `${process.env.EXPO_PUBLIC_SUPABASE_URL}/functions/v1/get-candidates`,
@@ -103,7 +112,7 @@ export function CandidateModal({ slot, excludeIds, onSelect, onClose }: Props) {
             apikey: anonKey,
             Authorization: `Bearer ${token ?? anonKey}`,
           },
-          body: JSON.stringify({ slot, excludeIds }),
+          body: JSON.stringify({ slot, excludeIds: activeExcludeIds }),
         }
       );
 
@@ -128,6 +137,31 @@ export function CandidateModal({ slot, excludeIds, onSelect, onClose }: Props) {
   useEffect(() => {
     fetchCandidates();
   }, [fetchCandidates]);
+
+  const handleReroll = () => {
+    if (rerollUsed) {
+      Alert.alert(t("error"), t("rerollLimitReached"));
+      return;
+    }
+
+    Alert.alert(
+      t("rerollConfirmTitle"),
+      t("rerollUsedAlert"),
+      [
+        { text: t("cancel"), style: "cancel" },
+        {
+          text: t("yes"),
+          onPress: async () => {
+            await useReroll();
+            candidatesCache.delete(cacheKey);
+            await AsyncStorage.removeItem(persistentCacheKey);
+            const currentIds = candidates.map((c) => c.id);
+            await fetchCandidates(true, currentIds);
+          },
+        },
+      ]
+    );
+  };
 
   const handleSelect = (c: RawCandidate) => {
     if (slot === "COACH") {
@@ -183,6 +217,29 @@ export function CandidateModal({ slot, excludeIds, onSelect, onClose }: Props) {
               : "💡 Power ratings are revealed in the result. Compare offense · rebounds · playmaking."}
           </Text>
 
+          {/* Reroll Bölümü */}
+          <View style={[styles.rerollSection, !rerollUsed && styles.rerollSectionAvailable]}>
+            <View style={styles.rerollInfo}>
+              <Text style={styles.rerollTitle}>
+                {rerollUsed ? "🔁 " + t("rerollLimitReached") : "🔁 " + t("rerollRemaining")}
+              </Text>
+              <Text style={styles.rerollSubtitle}>
+                {language === "tr"
+                  ? "Kadro kurarken 1 kez rastgele yeni adaylar isteyebilirsin."
+                  : "You can request random new candidates once while building your team."}
+              </Text>
+            </View>
+            {!rerollUsed && (
+              <TouchableOpacity
+                style={styles.rerollButton}
+                onPress={handleReroll}
+                activeOpacity={0.8}
+              >
+                <Text style={styles.rerollButtonText}>{t("reroll")}</Text>
+              </TouchableOpacity>
+            )}
+          </View>
+
           {/* İçerik */}
           {loading ? (
             <View style={styles.center}>
@@ -194,7 +251,7 @@ export function CandidateModal({ slot, excludeIds, onSelect, onClose }: Props) {
               <Text style={styles.errorText}>{error}</Text>
               <TouchableOpacity
                 style={[styles.retryBtn, { borderColor: slotColor }]}
-                onPress={fetchCandidates}
+                onPress={() => fetchCandidates()}
               >
                 <Text style={[styles.retryBtnText, { color: slotColor }]}>
                   {t("retry")}
@@ -524,5 +581,45 @@ const createStyles = (colors: ThemeColors) =>
     fontFamily: "Inter_600SemiBold",
     fontSize: 14,
     color: colors.textSecondary,
+  },
+  rerollSection: {
+    flexDirection: "row",
+    alignItems: "center",
+    backgroundColor: colors.surfaceElevated,
+    borderRadius: BorderRadius.md,
+    padding: Spacing.md,
+    marginHorizontal: Spacing.md,
+    marginBottom: Spacing.md,
+    borderWidth: 1,
+    borderColor: colors.surfaceBorder,
+    gap: Spacing.sm,
+  },
+  rerollSectionAvailable: {
+    borderColor: colors.gold + "33",
+  },
+  rerollInfo: {
+    flex: 1,
+  },
+  rerollTitle: {
+    fontFamily: "Inter_700Bold",
+    fontSize: 13,
+    color: colors.textPrimary,
+  },
+  rerollSubtitle: {
+    fontFamily: "Inter_400Regular",
+    fontSize: 11,
+    color: colors.textSecondary,
+    marginTop: 2,
+  },
+  rerollButton: {
+    backgroundColor: colors.gold,
+    borderRadius: BorderRadius.sm,
+    paddingHorizontal: Spacing.md,
+    paddingVertical: Spacing.sm,
+  },
+  rerollButtonText: {
+    fontFamily: "Inter_700Bold",
+    fontSize: 12,
+    color: "#0A0E1A",
   },
 });

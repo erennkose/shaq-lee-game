@@ -33,7 +33,7 @@ import { usePreferences } from "../../context/PreferencesContext";
 import { getLocalDateKey } from "../../lib/date";
 
 export default function HomeScreen() {
-  const { roster, setSlot, isRosterComplete, allPlayerIds } = useGame();
+  const { roster, setSlot, isRosterComplete, allPlayerIds, rerollUsed } = useGame();
   const { nickname } = useAuth();
   const { colors, language, slotLabels, t } = usePreferences();
   const styles = createStyles(colors);
@@ -180,6 +180,15 @@ export default function HomeScreen() {
 
         {/* Açıklama */}
         <Text style={styles.subtitle}>{t("subtitle")}</Text>
+
+        {/* Reroll Durumu */}
+        <View style={[styles.rerollBadge, { borderColor: rerollUsed ? colors.surfaceBorder : colors.gold + "33" }]}>
+          <Text style={[styles.rerollBadgeText, { color: rerollUsed ? colors.textMuted : colors.gold }]}>
+            {rerollUsed
+              ? `🔁 ${t("rerollLimitReached")}`
+              : `🔁 ${t("rerollRemaining")}`}
+          </Text>
+        </View>
 
         {/* Oyuncu slotları */}
         <Text style={styles.sectionTitle}>{t("players")}</Text>
@@ -492,5 +501,18 @@ const createStyles = (colors: ThemeColors) =>
     fontSize: 16,
     color: colors.background,
     letterSpacing: 0.3,
+  },
+  rerollBadge: {
+    alignSelf: "flex-start",
+    backgroundColor: colors.surfaceElevated,
+    borderRadius: BorderRadius.sm,
+    paddingHorizontal: Spacing.md,
+    paddingVertical: Spacing.xs,
+    marginBottom: Spacing.lg,
+    borderWidth: 1,
+  },
+  rerollBadgeText: {
+    fontFamily: "Inter_600SemiBold",
+    fontSize: 12,
   },
 });
