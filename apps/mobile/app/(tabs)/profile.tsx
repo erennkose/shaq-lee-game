@@ -11,6 +11,8 @@ import {
   ScrollView,
   TouchableOpacity,
   ActivityIndicator,
+  TextInput,
+  Alert,
 } from "react-native";
 import { LinearGradient } from "expo-linear-gradient";
 import { SafeAreaView } from "react-native-safe-area-context";
@@ -20,6 +22,8 @@ import { Spacing, BorderRadius, SLOT_COLORS, SLOTS, ThemeColors } from "../../co
 import { usePreferences } from "../../context/PreferencesContext";
 import { PreferenceQuickActions } from "../../components/PreferenceQuickActions";
 import { getLocalDateKey } from "../../lib/date";
+import { useAuth } from "../../context/AuthContext";
+import { supabase } from "../../lib/supabase";
 
 interface PlayerDetail {
   id: string;
@@ -52,6 +56,102 @@ export default function ProfileScreen() {
   const styles = createStyles(colors);
   const [todayRoster, setTodayRoster] = useState<RosterResult | null>(null);
   const [loading, setLoading] = useState(true);
+
+  const { nickname, saveNickname } = useAuth();
+  const [isEditingNickname, setIsEditingNickname] = useState(false);
+  const [newNickname, setNewNickname] = useState("");
+  const [savingNickname, setSavingNickname] = useState(false);
+
+  const handleSaveNickname = async () => {
+    const trimmed = newNickname.trim();
+    if (!trimmed) {
+      Alert.alert(t("error"), t("enterNickname"));
+      return;
+    }
+    if (trimmed.length < 2) {
+      Alert.alert(
+        t("error"),
+        language === "tr"
+          ? "Takma ad en az 2 karakter olmalı."
+          : "Nickname must be at least 2 characters."
+      );
+      return;
+    }
+    if (trimmed.length > 20) {
+      Alert.alert(
+        t("error"),
+        language === "tr"
+          ? "Takma ad en fazla 20 karakter olmalı."
+          : "Nickname can be at most 20 characters."
+      );
+      return;
+    }
+
+    setSavingNickname(true);
+    try {
+      const oldNickname = nickname;
+      await saveNickname(trimmed);
+
+      const today = getLocalDateKey();
+      let attemptId = await AsyncStorage.getItem("kadromu_kur_today_attempt_id");
+
+      if (!attemptId && oldNickname) {
+        const { data, error } = await supabase
+          .from("daily_attempts")
+          .select("id")
+          .eq("play_date", today)
+          .eq("nickname", oldNickname as string)
+          .limit(1);
+
+        if (!error && data && data.length > 0) {
+          const fetchedId = data[0].id as string;
+          attemptId = fetchedId;
+          await AsyncStorage.setItem("kadromu_kur_today_attempt_id", fetchedId);
+        }
+      }
+
+      if (attemptId) {
+        const anonKey = process.env.EXPO_PUBLIC_SUPABASE_ANON_KEY ?? "";
+        const res = await fetch(
+          `${process.env.EXPO_PUBLIC_SUPABASE_URL}/functions/v1/submit-roster`,
+          {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+              apikey: anonKey,
+              Authorization: `Bearer ${anonKey}`,
+            },
+            body: JSON.stringify({
+              updateNicknameOnly: true,
+              attemptId,
+              nickname: trimmed,
+            }),
+          }
+        );
+
+        if (!res.ok) {
+          const resData = await res.json().catch(() => ({}));
+          console.error("Liderlik tablosu güncelleme hatası:", resData);
+        }
+      }
+
+      setIsEditingNickname(false);
+      Alert.alert(
+        t("success"),
+        language === "tr" ? "Profil güncellendi." : "Profile updated."
+      );
+    } catch (err) {
+      console.error("Nickname güncellenirken hata:", err);
+      Alert.alert(
+        t("error"),
+        language === "tr"
+          ? "Takma ad güncellenemedi."
+          : "Could not update nickname."
+      );
+    } finally {
+      setSavingNickname(false);
+    }
+  };
 
   // Sayfa her odaklandığında yerel hafızadaki kadroyu oku
   useFocusEffect(
@@ -231,6 +331,67 @@ export default function ProfileScreen() {
         )}
 
         <View style={styles.settingsSection}>
+          <Text style={styles.sectionTitle}>{language === "tr" ? "Profil" : "Profile"}</Text>
+
+          <View style={styles.settingCard}>
+            <Text style={styles.settingsLabel}>{language === "tr" ? "Takma Ad" : "Nickname"}</Text>
+            
+            {!isEditingNickname ? (
+              <View style={styles.displayRow}>
+                <Text style={styles.nicknameText}>
+                  {nickname || (language === "tr" ? "Belirlenmedi" : "Not set")}
+                </Text>
+                <TouchableOpacity
+                  style={styles.editBtn}
+                  onPress={() => {
+                    setNewNickname(nickname || "");
+                    setIsEditingNickname(true);
+                  }}
+                  activeOpacity={0.8}
+                >
+                  <Text style={styles.editBtnText}>
+                    {language === "tr" ? "Düzenle" : "Edit"}
+                  </Text>
+                </TouchableOpacity>
+              </View>
+            ) : (
+              <View style={styles.editRow}>
+                <TextInput
+                  style={styles.editInput}
+                  value={newNickname}
+                  onChangeText={setNewNickname}
+                  placeholder={t("nicknamePlaceholder")}
+                  placeholderTextColor={colors.textMuted}
+                  maxLength={20}
+                  autoFocus
+                />
+                <TouchableOpacity
+                  style={styles.saveBtn}
+                  onPress={handleSaveNickname}
+                  disabled={savingNickname}
+                  activeOpacity={0.8}
+                >
+                  {savingNickname ? (
+                    <ActivityIndicator size="small" color={colors.background} />
+                  ) : (
+                    <Text style={styles.saveBtnText}>{t("save")}</Text>
+                  )}
+                </TouchableOpacity>
+                <TouchableOpacity
+                  style={styles.cancelBtn}
+                  onPress={() => setIsEditingNickname(false)}
+                  disabled={savingNickname}
+                  activeOpacity={0.8}
+                >
+                  <Text style={styles.cancelBtnText}>{t("cancel")}</Text>
+                </TouchableOpacity>
+              </View>
+            )}
+            <Text style={[styles.settingsLabel, { fontSize: 10, marginTop: 4 }]}>
+              {t("nicknameHint")}
+            </Text>
+          </View>
+
           <Text style={styles.sectionTitle}>{t("preferences")}</Text>
 
           <View style={styles.settingCard}>

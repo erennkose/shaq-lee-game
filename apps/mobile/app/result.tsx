@@ -18,6 +18,7 @@ import {
 import { LinearGradient } from "expo-linear-gradient";
 import { router, useLocalSearchParams } from "expo-router";
 import { SafeAreaView } from "react-native-safe-area-context";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useAuth } from "../context/AuthContext";
 import {
   Spacing,
@@ -123,6 +124,9 @@ export default function ResultScreen() {
 
       await saveNickname(trimmed);
       setSaved(true);
+      if (resData.id) {
+        await AsyncStorage.setItem("kadromu_kur_today_attempt_id", resData.id);
+      }
       Alert.alert(t("success"), t("scoreSaved"));
     } catch (err) {
       Alert.alert(t("error"), (err as Error).message ?? (language === "tr" ? "Skor kaydedilemedi." : "Score could not be saved."));

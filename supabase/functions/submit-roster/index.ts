@@ -54,13 +54,15 @@ function calculateTeamPower(
 // ─── Tip tanımları ────────────────────────────────────────────
 
 interface RequestBody {
-  playerIds: string[]; // 6 oyuncu id
-  coachId: string;
+  playerIds?: string[]; // 6 oyuncu id
+  coachId?: string;
   nickname?: string;
   teamPower?: number;
   predictedWins?: number;
   saveOnly?: boolean;
   playDate?: string;
+  updateNicknameOnly?: boolean;
+  attemptId?: string;
 }
 
 interface PlayerRow {
@@ -102,7 +104,42 @@ Deno.serve(async (req: Request) => {
     const adminSupabase = createClient(supabaseUrl, supabaseServiceKey);
 
     const body: RequestBody = await req.json();
-    const { playerIds, coachId, nickname, teamPower, predictedWins, saveOnly, playDate } = body;
+    const {
+      playerIds,
+      coachId,
+      nickname,
+      teamPower,
+      predictedWins,
+      saveOnly,
+      playDate,
+      updateNicknameOnly,
+      attemptId,
+    } = body;
+
+    // Nickname güncelleme işlemi (Profil ekranından çağrılır)
+    if (updateNicknameOnly) {
+      if (!attemptId) {
+        return json({ error: "Attempt ID gerekli" }, 400);
+      }
+      if (!nickname?.trim()) {
+        return json({ error: "Takma ad gerekli" }, 400);
+      }
+
+      // DB'de güncelle
+      const { data: updateData, error: updateError } = await adminSupabase
+        .from("daily_attempts")
+        .update({ nickname: nickname.trim() })
+        .eq("id", attemptId)
+        .select("id")
+        .single();
+
+      if (updateError) {
+        console.error("Takma ad güncellenirken hata:", updateError);
+        return json({ error: "Takma ad güncellenemedi" }, 500);
+      }
+
+      return json({ id: updateData?.id, success: true }, 200);
+    }
 
     // Validasyon
     if (!playerIds || playerIds.length !== 6) {
